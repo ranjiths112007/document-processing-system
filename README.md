@@ -28,6 +28,18 @@ I built this project as a hands-on way to solve that problem while learning how 
 The interesting part for me was connecting these pieces into one working application instead of treating them as separate tutorials.
 
 ---
+## Live Application
+
+A quick look at the working application:
+
+<p align="center">
+  <img src="live%20app%20screenshots/Screenshot%202026-09-04%20233222.png" width="48%" />
+  <img src="live%20app%20screenshots/Screenshot%202026-09-04%20233313.png" width="48%" />
+</p>
+
+The application provides a simple interface for uploading an invoice, processing it through OCR, extracting structured fields, and reviewing validation results.
+
+---
 
 ## What the system does
 
