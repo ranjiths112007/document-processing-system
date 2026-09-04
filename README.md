@@ -1,6 +1,6 @@
 # Document Processing and Validation System
 
-A practical full-stack project I built to understand how document automation works from end to end.
+A Document Processing and Validation System Using Python, OpenCV, Tesseract OCR, FastAPI, SQLAlchemy, Docker. I built to understand how document automation works from end to end.
 
 This application takes an invoice image, processes it with computer vision and OCR, extracts useful invoice fields, validates the extracted values, stores the result, and presents everything through a simple web interface and REST API.
 
