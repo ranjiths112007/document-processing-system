@@ -1,52 +1,59 @@
 # Document Processing and Validation System
 
-A practical document-processing application that accepts invoice images, improves image quality with OpenCV, extracts text with Tesseract OCR, converts common invoice fields into structured data, validates business rules, stores results in SQLite, and exposes the workflow through a FastAPI REST API.
+A practical document-processing application that turns invoice images into structured data. It combines OpenCV preprocessing, Tesseract OCR, rule-based extraction, validation, confidence scoring, SQLite persistence, and a FastAPI API with a browser interface.
 
-## Problem
+## What it solves
 
-Manual document processing is repetitive and error-prone. The system automates the first stage of turning image-based invoices into structured information that can be reviewed by a human.
+Invoice data is often trapped inside images or scans. This system automates the first pass: clean the document, read its text, identify common invoice fields, check arithmetic rules, and clearly flag uncertain records for human review.
 
-## Current MVP
+## Processing pipeline
 
-- PNG/JPG/JPEG document upload
-- File type and size validation
-- OpenCV preprocessing (grayscale, resize, blur reduction, Otsu thresholding)
+`Upload → Preprocess → OCR → Extract fields → Validate → Confidence score → Store → Review`
+
+## Features
+
+- PNG/JPG/JPEG invoice upload with size validation
+- OpenCV grayscale, resize, blur reduction and Otsu thresholding
 - Tesseract OCR
-- Regex-based invoice field extraction
-- Invoice arithmetic validation (`subtotal + tax = total`)
-- Confidence score and manual-review status
-- SQLite persistence
-- FastAPI REST endpoints and Swagger documentation
-- Simple browser UI
-- Docker and Docker Compose
+- Extraction of invoice number, date, vendor, customer, currency, subtotal, tax/GST and total
+- Arithmetic validation: `subtotal + tax = total`
+- Missing-field checks
+- Confidence score and automatic `MANUAL_REVIEW` status for low-confidence records
+- SQLite persistence using SQLAlchemy
+- FastAPI REST API with interactive Swagger documentation
+- Responsive browser UI with drag-and-drop upload and progress feedback
+- Docker support
+- Automated unit tests for extraction and validation
 
-## Processing Flow
+## API endpoints
 
-`Upload -> OpenCV preprocessing -> Tesseract OCR -> field extraction -> validation -> confidence score -> SQLite -> REST API / web UI`
-
-## API
-
-- `GET /health`
-- `POST /documents/upload`
-- `POST /documents/{document_id}/process`
-- `GET /documents/{document_id}`
-- `POST /documents/{document_id}/validate`
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Service health check |
+| POST | `/documents/upload` | Upload a document |
+| POST | `/documents/{id}/process` | Run OCR and extraction |
+| GET | `/documents/{id}` | Read processing result |
+| POST | `/documents/{id}/validate` | Re-run validation |
 
 ## Run locally
 
-Install Tesseract OCR on your machine, then:
+Install Tesseract OCR, then:
 
 ```bash
 python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
+# Windows: .venv\\Scripts\\activate
+# Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000` for the UI or `http://127.0.0.1:8000/docs` for Swagger.
+Open `http://127.0.0.1:8000` for the application or `http://127.0.0.1:8000/docs` for Swagger.
+
+Run tests:
+
+```bash
+pytest -q
+```
 
 ## Run with Docker
 
@@ -54,18 +61,26 @@ Open `http://127.0.0.1:8000` for the UI or `http://127.0.0.1:8000/docs` for Swag
 docker compose up --build
 ```
 
-## Notes
+Then open `http://127.0.0.1:8000`.
 
-The MVP intentionally uses deterministic extraction before adding an LLM layer. This makes failures easier to debug and means an API key is not required for the core pipeline.
+## Project structure
 
-Use synthetic or public sample documents only. Do not commit private identity documents, bank statements, uploaded files, databases, or API keys.
+```text
+app/
+  main.py          # FastAPI routes and processing workflow
+  services.py      # OpenCV, OCR, extraction, validation
+  models.py        # SQLAlchemy document model
+  db.py            # SQLite database setup
+frontend/
+  index.html       # Browser interface
+  app.js           # Upload and result workflow
+  style.css        # UI styling
+tests/
+  test_services.py # Unit tests
+```
 
-## Next steps
+## Important limitation
 
-- PDF-to-image support
-- LLM-assisted normalization and validation
-- Better OCR confidence handling
-- Automated tests and evaluation dataset
-- Authentication
-- Asynchronous processing
-- Cloud deployment
+OCR and extraction quality depends on the document image and layout. A confidence score is a routing signal, not a guarantee of correctness. Production use would require a larger evaluation dataset, stronger document classification, authentication, asynchronous jobs, and monitoring.
+
+Never commit private documents, database files, API keys, or other sensitive data.
