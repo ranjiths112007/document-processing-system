@@ -1,32 +1,6 @@
-const fileInput = document.getElementById('file');
-const button = document.getElementById('process');
-const result = document.getElementById('result');
-
-button.addEventListener('click', async () => {
-  const file = fileInput.files[0];
-  if (!file) {
-    result.textContent = 'Please choose a document first.';
-    return;
-  }
-
-  try {
-    result.textContent = 'Uploading...';
-    const form = new FormData();
-    form.append('file', file);
-    form.append('document_type', 'invoice');
-
-    const upload = await fetch('/documents/upload', { method: 'POST', body: form });
-    if (!upload.ok) throw new Error((await upload.json()).detail || 'Upload failed');
-    const { document_id } = await upload.json();
-
-    result.textContent = 'Processing with OpenCV + OCR...';
-    const process = await fetch(`/documents/${document_id}/process`, { method: 'POST' });
-    if (!process.ok) throw new Error((await process.json()).detail || 'Processing failed');
-
-    const output = await fetch(`/documents/${document_id}`);
-    if (!output.ok) throw new Error('Could not fetch result');
-    result.textContent = JSON.stringify(await output.json(), null, 2);
-  } catch (error) {
-    result.textContent = `Error: ${error.message}`;
-  }
-});
+const fileInput=document.getElementById('file');const button=document.getElementById('process');const dropzone=document.getElementById('dropzone');const fileName=document.getElementById('file-name');const empty=document.getElementById('empty');const result=document.getElementById('result');const status=document.getElementById('status');const progress=document.getElementById('progress');const progressText=document.getElementById('progress-text');const progressPercent=document.getElementById('progress-percent');const barFill=document.getElementById('bar-fill');
+fileInput.addEventListener('change',()=>{const f=fileInput.files[0];fileName.textContent=f?f.name:'Drop an invoice here'});['dragenter','dragover'].forEach(e=>dropzone.addEventListener(e,x=>{x.preventDefault();dropzone.classList.add('drag')}));['dragleave','drop'].forEach(e=>dropzone.addEventListener(e,x=>{x.preventDefault();dropzone.classList.remove('drag')}));dropzone.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f){fileInput.files=e.dataTransfer.files;fileName.textContent=f.name}});
+function setProgress(text,pct){progress.classList.remove('hidden');progressText.textContent=text;progressPercent.textContent=`${pct}%`;barFill.style.width=`${pct}%`}
+function showError(message){status.textContent='ERROR';status.className='badge fail';setProgress(message,0)}
+function display(data){empty.classList.add('hidden');result.classList.remove('hidden');const pct=Math.round((data.confidence||0)*100);document.getElementById('confidence-value').textContent=`${pct}%`;document.getElementById('confidence-fill').style.width=`${pct}%`;const fields=data.fields||{};document.getElementById('fields').innerHTML=Object.entries(fields).map(([k,v])=>`<div class="field"><label>${k.replaceAll('_',' ')}</label><div>${v??'Not detected'}</div></div>`).join('');const issues=data.validation?.validation_issues||[];const pass=issues.length===0&&data.validation?.amount_validation!=='FAIL';document.getElementById('validation').innerHTML=`<strong>Validation <span class="${pass?'pass':'warn'}">${pass?'PASSED':'REVIEW REQUIRED'}</span></strong>${issues.length?`<ul>${issues.map(i=>`<li>${i}</li>`).join('')}</ul>`:'All available business rules passed.'}`;document.getElementById('raw-text').textContent=data.raw_text||'No OCR text returned.';status.textContent=data.status.replace('_',' ');status.className=`badge ${pass?'ok':'review'}`}
+button.addEventListener('click',async()=>{const file=fileInput.files[0];if(!file){showError('Choose a document first');return}button.disabled=true;try{setProgress('Uploading document…',20);const form=new FormData();form.append('file',file);form.append('document_type','invoice');let r=await fetch('/documents/upload',{method:'POST',body:form});let body=await r.json();if(!r.ok)throw new Error(body.detail||'Upload failed');setProgress('Preprocessing image…',45);r=await fetch(`/documents/${body.document_id}/process`,{method:'POST'});body=await r.json();if(!r.ok)throw new Error(body.detail||'Processing failed');setProgress('Loading extracted fields…',85);r=await fetch(`/documents/${body.document_id}`);body=await r.json();if(!r.ok)throw new Error('Could not load result');display(body);setProgress('Complete',100)}catch(e){showError(e.message)}finally{button.disabled=false}});
