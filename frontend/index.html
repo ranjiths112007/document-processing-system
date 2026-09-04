@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Document Processing and Validation</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Document Processing and Validation</h1>
+    <p class="subtitle">Upload an invoice image to extract fields and validate totals.</p>
+    <section class="card">
+      <label for="file">Document</label>
+      <input id="file" type="file" accept=".png,.jpg,.jpeg">
+      <button id="process">Process Document</button>
+      <pre id="result">Waiting for a document...</pre>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
