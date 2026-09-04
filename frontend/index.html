@@ -7,16 +7,31 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main class="container">
-    <h1>Document Processing and Validation</h1>
-    <p class="subtitle">Upload an invoice image to extract fields and validate totals.</p>
-    <section class="card">
-      <label for="file">Document</label>
-      <input id="file" type="file" accept=".png,.jpg,.jpeg">
-      <button id="process">Process Document</button>
-      <pre id="result">Waiting for a document...</pre>
-    </section>
-  </main>
+  <div class="shell">
+    <header class="topbar">
+      <div><span class="eyebrow">DOCUMENT AUTOMATION</span><h1>Document Processing & Validation</h1><p>Extract structured invoice data from documents, validate totals, and flag records that need review.</p></div>
+      <a href="/docs" target="_blank" class="api-link">API Docs ↗</a>
+    </header>
+    <main class="grid">
+      <section class="panel upload-panel">
+        <div class="panel-title"><span class="step">01</span><div><h2>Upload document</h2><span>PNG, JPG or JPEG · max 10 MB</span></div></div>
+        <label class="dropzone" id="dropzone" for="file"><input id="file" type="file" accept=".png,.jpg,.jpeg"><div class="upload-icon">↑</div><strong id="file-name">Drop an invoice here</strong><small>or click to browse</small></label>
+        <button id="process" class="primary">Process document <span>→</span></button>
+        <div id="progress" class="progress hidden"><div class="progress-head"><span id="progress-text">Preparing…</span><span id="progress-percent">0%</span></div><div class="bar"><i id="bar-fill"></i></div></div>
+      </section>
+      <section class="panel results-panel">
+        <div class="panel-title"><span class="step">02</span><div><h2>Extraction result</h2><span>Structured fields and validation</span></div><span id="status" class="badge idle">READY</span></div>
+        <div id="empty" class="empty"><div>⌁</div><strong>No document processed yet</strong><span>Upload an invoice to see extracted fields here.</span></div>
+        <div id="result" class="result hidden">
+          <div class="confidence"><div><span>Processing confidence</span><strong id="confidence-value">—</strong></div><div class="confidence-track"><i id="confidence-fill"></i></div></div>
+          <div class="fields" id="fields"></div>
+          <div class="validation" id="validation"></div>
+          <details><summary>Raw OCR text</summary><pre id="raw-text"></pre></details>
+        </div>
+      </section>
+    </main>
+    <footer>FastAPI · OpenCV · Tesseract OCR · SQLite</footer>
+  </div>
   <script src="/static/app.js"></script>
 </body>
 </html>
